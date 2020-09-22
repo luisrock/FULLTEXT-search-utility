@@ -42,3 +42,7 @@ echo $lib_search->GetSearchQueryString(); // This will echo life* make*
 -- Example 3
 $lib_search = new Libs_Search("Annie's and Song");
 echo $lib_search->GetSearchQueryString(); // This will echo +ann* +song*
+
+-- Example 4
+$lib_search = new Libs_Search("Annie's not Song");
+echo $lib_search->GetSearchQueryString(); // This will echo ann* -song*
