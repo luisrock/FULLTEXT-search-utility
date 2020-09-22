@@ -6,6 +6,8 @@
 		const SEARCH_WORD_OR						= "or";
 		const SEARCH_WORD_AND						= "and";
 		const SEARCH_WORD_AND_OPERATOR				= "+";
+		const SEARCH_WORD_NOT						= "not";
+		const SEARCH_WORD_NOT_OPERATOR				= "-";
 		const SEARCH_WORD_BEGINNING_WITH_OPERATOR 	= "*";
 		const SEARCH_BUILD_QUERYSTRING_REGEX		= '/"[^"]+"|[^"\s,]+/';
 		
@@ -62,6 +64,7 @@
 			{
 				$keywordCount = 0;
 				$prependAndOperator = false;
+        $prependNotOperator = false;
 				
 				foreach($wordsArray as $word)
 				{
@@ -82,13 +85,17 @@
 					
 					if(	in_array($word, $keywordsArray) ||
 						in_array("+$word", $keywordsArray) ||
-						in_array("$word*", $keywordsArray) ||
+						in_array("-$word", $keywordsArray) ||
+            in_array("$word*", $keywordsArray) ||
 						in_array("+$word*", $keywordsArray) ||
+            in_array("-$word*", $keywordsArray) ||
 						
 						in_array($stemmedWord, $keywordsArray) ||
 						in_array("+$stemmedWord", $keywordsArray) ||
+						in_array("-$stemmedWord", $keywordsArray) ||
 						in_array("$stemmedWord*", $keywordsArray) ||
-						in_array("+$stemmedWord*", $keywordsArray)
+						in_array("+$stemmedWord*", $keywordsArray) ||
+						in_array("-$stemmedWord*", $keywordsArray)
 					  )
 					{
 						continue;
@@ -126,6 +133,24 @@
 							$word = self::SEARCH_WORD_AND_OPERATOR . $word;
 							
 						$prependAndOperator = false;
+					}
+          
+          // if the word is an 'not' prepend a '-' to neighbouring words
+					if($word == self::SEARCH_WORD_NOT)
+					{
+						// prepend the operator '-' to the next word if the word already doesnt contain '-' in the beginning
+						$prependNotOperator = true;
+						
+						continue;
+					}
+					
+					if($prependNotOperator)
+					{
+						if(!strstr($word, self::SEARCH_WORD_NOT_OPERATOR) || 
+								(strpos($word, self::SEARCH_WORD_NOT_OPERATOR) > 0))
+							$word = self::SEARCH_WORD_NOT_OPERATOR . $word;
+							
+						$prependNotOperator = false;
 					}
 					
 					// if the word is a phrase leave it as it is else stem the word
